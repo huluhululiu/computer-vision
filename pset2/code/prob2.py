@@ -13,8 +13,17 @@ from skimage.io import imread, imsave
 ## Now multiply each channel by multipliers that are inversely
 ## proportional to these averages, but add upto 3.
 def balance2a(img):
-
-    return img
+    rs=1/np.average(img[:,:,0])
+    gs=1/np.average(img[:,:,1])
+    bs=1/np.average(img[:,:,2])
+    sumColor=rs+gs+bs
+    alphaRed=3*rs/sumColor
+    alphaGreen=3*gs/sumColor
+    alphaBlue=3*bs/sumColor
+    alpha=np.array([alphaRed,alphaGreen,alphaBlue])
+    print("before")
+    print(rs,gs,bs)
+    return img*alpha
 
 
 ## Take color image, and return 'white balanced' color image
@@ -24,8 +33,21 @@ def balance2a(img):
 ## Now multiply each channel by multipliers that are inversely
 ## proportional to these averages, but add upto 3.
 def balance2b(img):
-
-    return img
+    rsort=np.sort(img[:,:,0])
+    gsort=np.sort(img[:,:,1])
+    bsort=np.sort(img[:,:,2])
+    size=int(len(rsort)/10)
+    rs=1/np.average(rsort[size*9:])
+    gs=1/np.average(gsort[size*9:])
+    bs=1/np.average(bsort[size*9:])
+    sumColor=rs+gs+bs
+    alphaRed=3*rs/sumColor
+    alphaGreen=3*gs/sumColor
+    alphaBlue=3*bs/sumColor
+    alpha=np.array([alphaRed,alphaGreen,alphaBlue])
+    print("after")
+    print(np.sum(rsort[size*9:]))
+    return img*alpha
 
 
 
