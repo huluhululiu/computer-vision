@@ -18,6 +18,12 @@ from skimage.io import imread, imsave
 #
 # Be careful about division by zero at mask==0 for normalizing unit vectors.
 def pstereo_n(imgs, L, mask):
+    gray=imgs[:]
+    result=np.zeros(imgs[0].shape,dtype=float32)
+    ltrans=np.linalg.inv(L)
+    for img in gray:
+        img=np.mean(img,-1)
+        s=np.linalg.solve(L,img)
     return np.zeros(imgs[0].shape)
 
 

@@ -62,8 +62,6 @@ def denoise_coeff(y,lmbda):
                 x[m][n]=y[m][n]+lmbda/2.0
     return x
 
-
-
 ########################## Support code below
 
 from os.path import normpath as fn # Fixes window/linux path conventions
