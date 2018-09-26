@@ -18,13 +18,18 @@ from skimage.io import imread, imsave
 #
 # Be careful about division by zero at mask==0 for normalizing unit vectors.
 def pstereo_n(imgs, L, mask):
-    gray=imgs[:]
-    result=np.zeros(imgs[0].shape,dtype=float32)
-    ltrans=np.linalg.inv(L)
-    for img in gray:
-        img=np.mean(img,-1)
-        s=np.linalg.solve(L,img)
-    return np.zeros(imgs[0].shape)
+    gray=np.average(imgs,axis=3)
+    N,H,W,C = np.shape(imgs)
+    nrm = np.zeros((H,W,C))
+    for i in range(H):
+        for j in range(W):
+            # print(np.shape(np.transpose(L)))
+            
+            if mask[i][j] == 1:
+                solving=np.linalg.solve(np.inner(np.transpose(L),np.transpose(L)),np.inner(np.transpose(L),gray[:,i,j]))
+                mag = np.sqrt(np.sum(np.square(solving)))
+                nrm[i,j,:] = solving/mag
+    return nrm
 
 
 # Inputs:
@@ -39,7 +44,41 @@ def pstereo_n(imgs, L, mask):
 #
 # Be careful about division by zero at mask==0.
 def pstereo_alb(imgs, nrm, L, mask):
-    return imgs[0]
+    N,H,W,C = np.shape(imgs)
+    alb = np.zeros((H,W,C))
+    imgR=np.zeros((N,H,W))
+    imgG=np.zeros((N,H,W))
+    imgB=np.zeros((N,H,W))
+    for k in range(N):
+        imgR[k,:,:]=imgs[k][:,:,0]
+        imgG[k,:,:]=imgs[k][:,:,1]
+        imgB[k,:,:]=imgs[k][:,:,2]
+    # print(imgset[1,2,3,:])
+
+    for i in range(H):
+        for j in range(W):
+            if mask[i][j] == 1:
+                # print(np.dot(L,np.transpose(nrm[i,j,:])))
+                # print(np.inner(L,np.transpose(nrm[i,j,:])))
+                J=np.dot(L,np.transpose(nrm[i,j,:]))
+                alb[i,j,0]=np.sum(np.dot(imgR[:,i,j],J)) / np.sum(J)
+                alb[i,j,1]=np.sum(np.dot(imgG[:,i,j],J)) / np.sum(J)
+                alb[i,j,2]=np.sum(np.dot(imgB[:,i,j],J)) / np.sum(J)
+            # print(np.shape(np.transpose(L)))
+                # for m in range(N):
+                #     J=np.inner(L,np.transpose(nrm[i,j,:]))[m]
+                #     a=np.dot(imgR[m,i,j],J)/np.dot(J,J)
+                #     b=np.dot(imgG[m,i,j],J)/np.dot(J,J)
+                #     c=np.dot(imgB[m,i,j],J)/np.dot(J,J)
+                #     sumofR+=a
+                #     sumofG+=b
+                #     sumofB+=c
+                # alb[i,j,0]=sumofR
+                # alb[i,j,1]=sumofG
+                # alb[i,j,2]=sumofB/N
+                # print(alb[i,j,:])
+                
+    return alb
     
 ########################## Support code below
 
@@ -87,7 +126,6 @@ nrm = pstereo_n(imgs,L,mask)
 nimg = nrm/2.0+0.5
 nimg = clip(nimg * mask[:,:,np.newaxis])
 imsave(fn('outputs/prob3_nrm.png'),nimg)
-
 
 alb = pstereo_alb(imgs,nrm,L,mask)
 

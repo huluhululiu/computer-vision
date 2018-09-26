@@ -56,10 +56,11 @@ def denoise_coeff(y,lmbda):
     x=np.zeros(y.shape)
     for m in range(y.shape[0]):
         for n in range(y.shape[1]):
-            if y[m][n]>=0:
+            if y[m][n]>=lmbda/2.0:
                 x[m][n]=y[m][n]-lmbda/2.0
-            else:
+            elif  y[m][n]<=-lmbda/2.0:
                 x[m][n]=y[m][n]+lmbda/2.0
+    # return [[[z-lmbda/2.0 if z>=lmbda/2 else z+lmbda/2 if z<=-lmbda/2.0 else 0] for z in m] for m in y]
     return x
 
 ########################## Support code below
